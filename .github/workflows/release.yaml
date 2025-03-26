@@ -15,7 +15,14 @@ jobs:
       contents: write  # 需要写入权限来创建 release
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: 'recursive'
       
+      - name: Install Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y zstd libzstd-dev
+          
       - name: Install Zig
         uses: goto-bus-stop/setup-zig@v2
         with:
