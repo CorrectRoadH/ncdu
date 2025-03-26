@@ -17,7 +17,8 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: 'recursive'
-      
+          fetch-depth: 0  # 确保完整克隆仓库
+          
       - name: Install Dependencies
         run: |
           sudo apt-get update
@@ -27,6 +28,13 @@ jobs:
         uses: goto-bus-stop/setup-zig@v2
         with:
           version: '0.14.0'
+          
+      - name: Build zstd
+        run: |
+          git clone https://github.com/facebook/zstd.git
+          cd zstd
+          make
+          cd ..
           
       - name: Build
         run: |
