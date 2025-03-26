@@ -600,38 +600,38 @@ pub fn main() void {
     if (@import("builtin").os.tag != .linux and config.exclude_kernfs)
         ui.die("The --exclude-kernfs flag is currently only supported on Linux.\n", .{});
 
-    const stdin = std.io.getStdIn();
-    const stdout = std.io.getStdOut();
-    const out_tty = stdout.isTty();
-    const in_tty = stdin.isTty();
-    if (config.scan_ui == null) {
-        if (export_json orelse export_bin) |f| {
-            if (!out_tty or std.mem.eql(u8, f, "-")) config.scan_ui = .none
-            else config.scan_ui = .line;
-        } else config.scan_ui = .full;
-    }
-    if (!in_tty and import_file == null and export_json == null and export_bin == null and !quit_after_scan)
-        ui.die("Standard input is not a TTY. Did you mean to import a file using '-f -'?\n", .{});
-    config.nc_tty = !in_tty or (if (export_json orelse export_bin) |f| std.mem.eql(u8, f, "-") else false);
+    // const stdin = std.io.getStdIn();
+    // const stdout = std.io.getStdOut();
+    // const out_tty = stdout.isTty();
+    // const in_tty = stdin.isTty();
+    // if (config.scan_ui == null) {
+    //     if (export_json orelse export_bin) |f| {
+    //         if (!out_tty or std.mem.eql(u8, f, "-")) config.scan_ui = .none
+    //         else config.scan_ui = .line;
+    //     } else config.scan_ui = .full;
+    // }
+    // if (!in_tty and import_file == null and export_json == null and export_bin == null and !quit_after_scan)
+    //     ui.die("Standard input is not a TTY. Did you mean to import a file using '-f -'?\n", .{});
+    // config.nc_tty = !in_tty or (if (export_json orelse export_bin) |f| std.mem.eql(u8, f, "-") else false);
 
-    event_delay_timer = std.time.Timer.start() catch unreachable;
-    defer ui.deinit();
+    // event_delay_timer = std.time.Timer.start() catch unreachable;
+    // defer ui.deinit();
 
-    if (export_json) |f| {
-        const file =
-            if (std.mem.eql(u8, f, "-")) stdout
-            else std.fs.cwd().createFileZ(f, .{})
-                 catch |e| ui.die("Error opening export file: {s}.\n", .{ui.errorString(e)});
-        json_export.setupOutput(file);
-        sink.global.sink = .json;
-    } else if (export_bin) |f| {
-        const file =
-            if (std.mem.eql(u8, f, "-")) stdout
-            else std.fs.cwd().createFileZ(f, .{})
-                 catch |e| ui.die("Error opening export file: {s}.\n", .{ui.errorString(e)});
-        bin_export.setupOutput(file);
-        sink.global.sink = .bin;
-    }
+    // if (export_json) |f| {
+    //     const file =
+    //         if (std.mem.eql(u8, f, "-")) stdout
+    //         else std.fs.cwd().createFileZ(f, .{})
+    //              catch |e| ui.die("Error opening export file: {s}.\n", .{ui.errorString(e)});
+    //     json_export.setupOutput(file);
+    //     sink.global.sink = .json;
+    // } else if (export_bin) |f| {
+    //     const file =
+    //         if (std.mem.eql(u8, f, "-")) stdout
+    //         else std.fs.cwd().createFileZ(f, .{})
+    //              catch |e| ui.die("Error opening export file: {s}.\n", .{ui.errorString(e)});
+    //     bin_export.setupOutput(file);
+    //     sink.global.sink = .bin;
+    // }
 
     if (import_file) |f| {
         readImport(f) catch |e| ui.die("Error reading file '{s}': {s}.\n", .{f, ui.errorString(e)});
@@ -651,37 +651,8 @@ pub fn main() void {
     config.can_delete = config.can_delete orelse !config.imported;
     config.can_refresh = config.can_refresh orelse !config.imported;
 
-    config.scan_ui = .full; // in case we're refreshing from the UI, always in full mode.
-    ui.init();
-    state = .browse;
-    browser.initRoot();
-
-    while (true) {
-        switch (state) {
-            .refresh => {
-                var full_path = std.ArrayList(u8).init(allocator);
-                defer full_path.deinit();
-                mem_sink.global.root.?.fmtPath(true, &full_path);
-                scan.scan(util.arrayListBufZ(&full_path)) catch {
-                    sink.global.last_error = allocator.dupeZ(u8, full_path.items) catch unreachable;
-                    sink.global.state = .err;
-                    while (state == .refresh) handleEvent(true, true);
-                };
-                state = .browse;
-                browser.loadDir(0);
-            },
-            .shell => {
-                spawnShell();
-                state = .browse;
-            },
-            .delete => {
-                const next = delete.delete();
-                state = .browse;
-                browser.loadDir(if (next) |n| n.nameHash() else 0);
-            },
-            else => handleEvent(true, false)
-        }
-    }
+    std.debug.print("{}\n", .{model.root.entry.size});
+    std.debug.print("{}\n", .{model.root.items});
 }
 
 pub var event_delay_timer: std.time.Timer = undefined;
