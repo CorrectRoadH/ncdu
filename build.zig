@@ -11,7 +11,7 @@ pub fn build(b: *std.Build) void {
     const strip = b.option(bool, "strip", "Strip debugging info (by default false)") orelse false;
 
     const main_mod = b.createModule(.{
-        .root_source_file = b.path("src/main.zig"),
+        .source_file = b.path("src/main.zig"),
         .target = target,
         .optimize = optimize,
         .strip = strip,
