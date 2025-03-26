@@ -43,7 +43,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            zig-out/bin/ncdu
+            ncdu-2.8-linux-x86_64.tar.gz
           draft: false
           prerelease: false
           generate_release_notes: true
